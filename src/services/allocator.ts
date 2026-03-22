@@ -1,13 +1,16 @@
 import { Cargo, Tank, Allocation } from '../models';
 import { Dinic } from './dinic';
 
+type CargoData = { id: string; volume: number };
+type TankData = { id: string; capacity: number };
+
 type AllocationEntry = {
   cargoId: string;
   tankId: string;
   loadedVolume: number;
 };
 
-export async function computeRelaxedMaxFlow(cargos: Cargo[], tanks: Tank[]): Promise<number> {
+export async function computeRelaxedMaxFlow(cargos: CargoData[], tanks: TankData[]): Promise<number> {
   const source = 0;
   const cargoBase = 1;
   const tankBase = cargoBase + cargos.length;
@@ -32,8 +35,15 @@ export async function computeRelaxedMaxFlow(cargos: Cargo[], tanks: Tank[]): Pro
   return dinic.maxFlow(source, sink);
 }
 
-export function computeTankAllocation(cargos: Cargo[], tanks: Tank[]): { totalLoaded: number; allocations: AllocationEntry[]; cargoLeftover: { id: string; volume: number }[]; tankUnused: { id: string; capacity: number }[] } {
-  const remainingCargo = cargos.map((c) => ({ ...c.get({ plain: true }), remaining: c.volume }));
+export async function computeRelaxedMaxFlowFromDb(cargos: Cargo[], tanks: Tank[]): Promise<number> {
+  return computeRelaxedMaxFlow(
+    cargos.map((c) => ({ id: c.id, volume: c.volume })),
+    tanks.map((t) => ({ id: t.id, capacity: t.capacity }))
+  );
+}
+
+export function computeTankAllocation(cargos: CargoData[], tanks: TankData[]): { totalLoaded: number; allocations: AllocationEntry[]; cargoLeftover: { id: string; volume: number }[]; tankUnused: { id: string; capacity: number }[] } {
+  const remainingCargo = cargos.map((c) => ({ ...c, remaining: c.volume }));
   const sortedCargos = [...remainingCargo].sort((a, b) => b.remaining - a.remaining);
 
   const sortedTanks = [...tanks].sort((a, b) => b.capacity - a.capacity);
@@ -86,8 +96,11 @@ export async function runAllocation(batchId: string): Promise<{
     return { relaxedMaxFlow: 0, totalLoaded: 0, allocations: [], cargoLeftover: [], tankUnused: [] };
   }
 
-  const relaxedMaxFlow = await computeRelaxedMaxFlow(cargos, tanks);
-  const results = computeTankAllocation(cargos, tanks);
+  const relaxedMaxFlow = await computeRelaxedMaxFlowFromDb(cargos, tanks);
+  const results = computeTankAllocation(
+    cargos.map((c) => ({ id: c.id, volume: c.volume })),
+    tanks.map((t) => ({ id: t.id, capacity: t.capacity }))
+  );
 
   await Allocation.destroy({ where: { batchId } });
   await Promise.all(
