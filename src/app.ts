@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 app.get('/', (_req, res) => {
-  res.json({ status: 'ok', service: 'Cargo Allocation System (Node TS + Sequelize + Dinic)' });
+  res.json({ status: 'ok', service: 'Cargo Allocation System' });
 });
 
 app.post('/input', async (req, res) => {
