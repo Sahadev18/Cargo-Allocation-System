@@ -5,9 +5,6 @@ import { runAllocation } from './services/allocator';
 
 dotenv.config();
 
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '***' : 'NOT SET');
-
 const app = express();
 app.use(express.json());
 
