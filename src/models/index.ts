@@ -3,9 +3,11 @@ import { Cargo } from './cargo';
 import { Tank } from './tank';
 import { Allocation } from './allocation';
 import { Batch } from './batch';
+import mysql2 from 'mysql2';
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
+  dialectModule: mysql2,
   host: process.env.DB_HOST || 'localhost',
   port: Number(process.env.DB_PORT || 3306),
   username: process.env.DB_USER || 'root',
