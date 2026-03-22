@@ -34,6 +34,3 @@ Node.js + TypeScript backend for cargo-to-tank assignment using Dinic algorithm 
   1. `relaxedMaxFlow` using maximum flow without "one cargo per tank" restriction
   2. practical assignment via greedy one-cargo-per-tank (sorted capacity)
 
-## Notes
-- The core logic addresses your requirement to use Dinic.
-- It preserves constraint "each tank one cargo" in practical output.
